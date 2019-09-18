@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter.colorchooser import askcolor
+import tkinter.font as tkFont
 
 
-class Paint(object):
+class Paint():
 
     DEFAULT_PEN_SIZE = 5.0
     DEFAULT_COLOR = 'black'
@@ -11,10 +12,13 @@ class Paint(object):
     mode = 'pen'
 
     def __init__(self):
+        self.root = tk.Tk()
 
         self.items = []
 
-        self.root = tk.Tk()
+        self.font = tkFont.Font(family='Helvetica', size=20)
+
+        self.text_input = tk.StringVar(self.root)
 
         self.pen_button = tk.Button(self.root, text='pen', command=self.use_pen)
         self.pen_button.grid(row=0, column=0)
@@ -31,12 +35,17 @@ class Paint(object):
         self.eraser_button = tk.Button(self.root, text='eraser', command=self.use_eraser)
         self.eraser_button.grid(row=0, column=4)
 
-        self.choose_size_button = tk.Scale(self.root, from_=1, to=10, orient=tk.HORIZONTAL)
+        self.choose_size_button = tk.Scale(self.root, from_=1, to=10, orient=tk.HORIZONTAL, command=self.update_width)
         self.choose_size_button.set(self.DEFAULT_PEN_SIZE)
         self.choose_size_button.grid(row=0, column=5)
 
+        self.text_entry = tk.Entry(self.root, width=50, textvariable=self.text_input)
+        self.text_entry.grid(row=1, columnspan=5)
+        self.text_button = tk.Button(self.root, text='text', command=self.use_text)
+        self.text_button.grid(row=1, column=5)
+
         self.c = tk.Canvas(self.root, bg=self.BG_COLOR, width=600, height=600)
-        self.c.grid(row=1, columnspan=6)
+        self.c.grid(row=2, columnspan=6)
 
         self.setup()
 
@@ -105,10 +114,19 @@ class Paint(object):
         self.mode = 'eraser'
         self.activate_button(self.eraser_button)
 
+    def use_text(self):
+        self.mode = 'text'
+        self.activate_button(self.text_button)
+
     def activate_button(self, some_button):
         self.active_button.config(relief=tk.RAISED)
         some_button.config(relief=tk.SUNKEN)
         self.active_button = some_button
+
+    def update_width(self, value):
+        value = int(value)
+        self.line_width = value
+        self.font.configure(size=(value * 5))
 
     def key_up(self, event):
         ctrl = (event.state & 0x4) != 0
@@ -135,9 +153,13 @@ class Paint(object):
             width = self.choose_size_button.get() / 2
             self.ghost = self.c.create_oval(event.x - width, event.y - width, event.x + width, event.y + width,
                                             outline='black', width=1)
+        if self.mode == 'text':
+            if self.ghost:
+                self.c.delete(self.ghost)
+            self.ghost = self.c.create_text(event.x, event.y,
+                                            text=self.text_input.get(), fill=self.color, font=self.font)
 
     def draw_start(self, event):
-        self.line_width = self.choose_size_button.get()
         self.start_x = event.x
         self.start_y = event.y
 
@@ -146,6 +168,9 @@ class Paint(object):
             self.items.append(self.c.create_line(self.start_x, self.start_y, event.x, event.y,
                                                  width=self.line_width, fill=paint_color,
                                                  capstyle=tk.ROUND, smooth=tk.TRUE, splinesteps=36))
+        if self.mode == 'text':
+            self.items.append(self.c.create_text(event.x, event.y,
+                                                 text=self.text_input.get(), fill=self.color, font=self.font))
 
     def draw_motion(self, event):
         if self.mode in ['pen', 'eraser']:
@@ -175,6 +200,8 @@ class Paint(object):
         if self.mode == 'ellipse':
             self.items.append(self.c.create_oval(self.start_x, self.start_y, event.x, event.y,
                                                  outline=self.color, width=self.line_width))
+        if self.mode == 'text':
+            self.use_pen()
         self.reset(None)
 
 
