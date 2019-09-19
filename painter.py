@@ -48,6 +48,7 @@ class Painter():
         self.start_y = None
         self.ghost = None
         self.color = self.DEFAULT['color']
+        self.bg_color = self.DEFAULT['background']
         self.text_input.set('')
         self.mode = self.DEFAULT['mode']
         self.c.bind('<Button-1>', self.draw_start)
@@ -65,6 +66,9 @@ class Painter():
             # process message
             if message[0] == 'color':
                 self.color = message[1]
+            elif message[0] == 'background':
+                self.bg_color = message[1]
+                self.c.configure(bg=self.bg_color)
             elif message[0] == 'clean':
                 self.clean_canvas()
             elif message[0] == 'mode':
@@ -132,7 +136,7 @@ class Painter():
         self.start_y = event.y
 
         if self.mode in ['pen', 'eraser']:
-            paint_color = self.color if self.mode == 'pen' else self.BG_COLOR
+            paint_color = self.color if self.mode == 'pen' else self.bg_color
             self.items.append(self.c.create_line(self.start_x, self.start_y, event.x, event.y,
                                                  width=self.line_width, fill=paint_color,
                                                  capstyle=tk.ROUND, smooth=tk.TRUE, splinesteps=36))
@@ -142,7 +146,7 @@ class Painter():
 
     def draw_motion(self, event):
         if self.mode in ['pen', 'eraser']:
-            paint_color = self.color if self.mode == 'pen' else self.BG_COLOR
+            paint_color = self.color if self.mode == 'pen' else self.bg_color
             self.items.append(self.c.create_line(self.start_x, self.start_y, event.x, event.y,
                                                  width=self.line_width, fill=paint_color,
                                                  capstyle=tk.ROUND, smooth=tk.TRUE, splinesteps=36))

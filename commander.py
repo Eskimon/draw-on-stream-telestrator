@@ -15,11 +15,11 @@ PORT = 4816
 
 class Commander():
 
-    DEFAULT_PEN_SIZE = 5.0
-    DEFAULT_COLOR = 'black'
-    BG_COLOR = 'white'
-
-    mode = 'pen'
+    DEFAULT = {
+        'width': 5.0,
+        'color': '#000000',
+        'background': '#FFFFFF',
+    }
 
     def __init__(self):
         self.root = tk.Tk()
@@ -46,17 +46,20 @@ class Commander():
         self.color_button = tk.Button(self.root, text='color', command=self.choose_color)
         self.color_button.grid(row=0, column=3)
 
+        self.bg_color_button = tk.Button(self.root, text='background', command=self.choose_bg_color)
+        self.bg_color_button.grid(row=0, column=4)
+
         self.eraser_button = tk.Button(self.root, text='eraser', command=self.use_eraser)
-        self.eraser_button.grid(row=0, column=4)
+        self.eraser_button.grid(row=0, column=5)
 
         self.choose_size_button = tk.Scale(self.root, from_=1, to=10, orient=tk.HORIZONTAL, command=self.update_width)
-        self.choose_size_button.set(self.DEFAULT_PEN_SIZE)
-        self.choose_size_button.grid(row=0, column=5)
+        self.choose_size_button.set(self.DEFAULT['width'])
+        self.choose_size_button.grid(row=0, column=6)
 
         self.text_entry = tk.Entry(self.root, width=50, textvariable=self.text_input)
-        self.text_entry.grid(row=1, columnspan=5)
+        self.text_entry.grid(row=1, columnspan=6)
         self.text_button = tk.Button(self.root, text='text', command=self.use_text)
-        self.text_button.grid(row=1, column=5)
+        self.text_button.grid(row=1, column=6)
 
         # Initialize some stuff
         self.setup()
@@ -86,22 +89,16 @@ class Commander():
         # # display the menu
         # self.root.config(menu=menubar)
 
-
         self.root.mainloop()
 
     def setup(self):
         self.start_x = None
         self.start_y = None
         self.ghost = None
-        self.color = self.DEFAULT_COLOR
         self.active_button = self.pen_button
-        self.use_pen()
-        # self.c.bind('<Button-1>', self.draw_start)
-        # self.c.bind('<B1-Motion>', self.draw_motion)
-        # self.c.bind('<ButtonRelease-1>', self.draw_release)
-        # self.c.bind('<Motion>', self.motion)
-        # self.c.bind('<Leave>', self.reset)
-        # self.root.bind('<Key>', self.key_up)
+        self.color = self.DEFAULT['color']
+        self.bg_color = self.DEFAULT['background']
+        self.text_input.set('')
 
     def hello(self):
         print("hello!")
@@ -127,6 +124,13 @@ class Commander():
             return
         self.color = color
         the_queue.put('color {}'.format(self.color).encode())
+
+    def choose_bg_color(self):
+        color = askcolor(color=self.bg_color)[1]
+        if not color:
+            return
+        self.bg_color = color
+        the_queue.put('background {}'.format(self.bg_color).encode())
 
     def use_eraser(self):
         self.mode = 'eraser'
@@ -160,8 +164,8 @@ class SocketThread(threading.Thread):
 
     def run(self):
         while True:
+            connected = False
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                connected = False
                 i = 0
                 while not connected:
                     i += 1
