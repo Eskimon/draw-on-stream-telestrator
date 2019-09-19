@@ -18,6 +18,7 @@ class Painter():
         'color': '#000000',
         'background': '#ffffff',
         'mode': 'pen',
+        'alpha': 80,
     }
 
     def __init__(self):
@@ -40,6 +41,11 @@ class Painter():
         # Initialize some stuff
         self.setup()
 
+        self.root.wait_visibility(self.root)
+        self.root.wm_attributes('-alpha', self.alpha / 100.)
+        # self.root.attributes('-alpha', .30)
+        # self.root.wm_attributes('-alpha', .30)
+
         self.root.mainloop()
 
     def setup(self):
@@ -49,6 +55,7 @@ class Painter():
         self.ghost = None
         self.color = self.DEFAULT['color']
         self.bg_color = self.DEFAULT['background']
+        self.alpha = self.DEFAULT['alpha']
         self.text_input.set('')
         self.mode = self.DEFAULT['mode']
         self.c.bind('<Button-1>', self.draw_start)
@@ -71,6 +78,8 @@ class Painter():
                 self.c.configure(bg=self.bg_color)
             elif message[0] == 'clean':
                 self.clean_canvas()
+            elif message[0] == 'undo':
+                self.undo()
             elif message[0] == 'mode':
                 self.mode = message[1]
                 self.reset(None)
@@ -78,6 +87,9 @@ class Painter():
                 width = int(message[1])
                 self.line_width = width
                 self.font.configure(size=(width * 5))
+            elif message[0] == 'alpha':
+                self.alpha = int(message[1])
+                self.root.wm_attributes('-alpha', self.alpha / 100.)
             elif message[0] == 'text':
                 self.text_input.set(message[1])
         # check again later
@@ -86,10 +98,7 @@ class Painter():
     def key_up(self, event):
         ctrl = (event.state & 0x4) != 0
         if event.keysym == 'z' and ctrl:
-            if len(self.items):
-                item = self.items[-1]
-                self.c.delete(item)
-                self.items.pop()
+            the_queue.put('undo')
         if event.keysym == 'w' and ctrl:
             the_queue.put('clean')
         if event.char == 'r':
@@ -101,11 +110,25 @@ class Painter():
         if event.char == 'l':
             the_queue.put('mode line')
         if event.char == '+':
-            value = int(min(10, self.line_width + 1))
-            the_queue.put('width {}'.format(value))
+            if ctrl:
+                value = int(min(100, self.alpha + 5))
+                the_queue.put('alpha {}'.format(value))
+            else:
+                value = int(min(10, self.line_width + 1))
+                the_queue.put('width {}'.format(value))
         if event.char == '-':
-            value = int(max(1, self.line_width - 1))
-            the_queue.put('width {}'.format(value))
+            if ctrl:
+                value = int(max(1, self.alpha - 5))
+                the_queue.put('alpha {}'.format(value))
+            else:
+                value = int(max(1, self.line_width - 1))
+                the_queue.put('width {}'.format(value))
+
+    def undo(self):
+        if len(self.items):
+            item = self.items[-1]
+            self.c.delete(item)
+            self.items.pop()
 
     def clean_canvas(self):
         self.items.clear()

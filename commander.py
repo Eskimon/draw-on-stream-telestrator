@@ -19,6 +19,7 @@ class Commander():
         'width': 5.0,
         'color': '#000000',
         'background': '#FFFFFF',
+        'alpha': 80,
     }
 
     def __init__(self):
@@ -56,10 +57,20 @@ class Commander():
         self.choose_size_button.set(self.DEFAULT['width'])
         self.choose_size_button.grid(row=0, column=6)
 
+        self.choose_alpha_button = tk.Scale(self.root, from_=1, to=100, orient=tk.HORIZONTAL, command=self.update_alpha)
+        self.choose_alpha_button.set(self.DEFAULT['alpha'])
+        self.choose_alpha_button.grid(row=0, column=7)
+
+        self.clean_button = tk.Button(self.root, text='clean', command=self.clean)
+        self.clean_button.grid(row=0, column=8)
+
+        self.undo_button = tk.Button(self.root, text='undo', command=self.undo)
+        self.undo_button.grid(row=0, column=9)
+
         self.text_entry = tk.Entry(self.root, width=50, textvariable=self.text_input)
-        self.text_entry.grid(row=1, columnspan=6)
+        self.text_entry.grid(row=1, columnspan=9)
         self.text_button = tk.Button(self.root, text='text', command=self.use_text)
-        self.text_button.grid(row=1, column=6)
+        self.text_button.grid(row=1, column=9)
 
         # Initialize some stuff
         self.setup()
@@ -96,8 +107,12 @@ class Commander():
         self.start_y = None
         self.ghost = None
         self.active_button = self.pen_button
+        self.line_width = self.DEFAULT['width']
         self.color = self.DEFAULT['color']
         self.bg_color = self.DEFAULT['background']
+        self.alpha = self.DEFAULT['alpha']
+        self.color_button.configure(background=self.color)
+        self.bg_color_button.configure(background=self.bg_color)
         self.text_input.set('')
 
     def hello(self):
@@ -123,6 +138,7 @@ class Commander():
         if not color:
             return
         self.color = color
+        self.color_button.configure(background=color)
         the_queue.put('color {}'.format(self.color).encode())
 
     def choose_bg_color(self):
@@ -130,6 +146,7 @@ class Commander():
         if not color:
             return
         self.bg_color = color
+        self.bg_color_button.configure(background=color)
         the_queue.put('background {}'.format(self.bg_color).encode())
 
     def use_eraser(self):
@@ -153,6 +170,17 @@ class Commander():
         self.line_width = value
         self.font.configure(size=(value * 5))
         the_queue.put('width {}'.format(value).encode())
+
+    def update_alpha(self, value):
+        value = int(value)
+        self.alpha = value
+        the_queue.put('alpha {}'.format(value).encode())
+
+    def clean(self):
+        the_queue.put('clean'.encode())
+
+    def undo(self):
+        the_queue.put('undo'.encode())
 
 
 class SocketThread(threading.Thread):
