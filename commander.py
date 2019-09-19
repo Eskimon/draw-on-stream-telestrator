@@ -1,5 +1,6 @@
-import socket
+import json
 import queue
+import socket
 import threading
 import time
 import tkinter as tk
@@ -18,7 +19,8 @@ class Commander():
     DEFAULT = {
         'width': 5.0,
         'color': '#000000',
-        'background': '#FFFFFF',
+        'background': '#ffffff',
+        'mode': 'pen',
         'alpha': 80,
     }
 
@@ -75,48 +77,30 @@ class Commander():
         # Initialize some stuff
         self.setup()
 
-        # # create a toplevel menu
-        # menubar = tk.Menu(self.root)
-
-        # # create a pulldown menu, and add it to the menu bar
-        # filemenu = tk.Menu(menubar, tearoff=0)
-        # filemenu.add_command(label="Open", command=self.hello)
-        # filemenu.add_command(label="Save", command=self.hello)
-        # filemenu.add_separator()
-        # filemenu.add_command(label="Exit", command=self.root.quit)
-        # menubar.add_cascade(label="File", menu=filemenu)
-
-        # # create more pulldown menus
-        # editmenu = tk.Menu(menubar, tearoff=0)
-        # editmenu.add_command(label="Cut", command=self.hello)
-        # editmenu.add_command(label="Copy", command=self.hello)
-        # editmenu.add_command(label="Paste", command=self.hello)
-        # menubar.add_cascade(label="Edit", menu=editmenu)
-
-        # helpmenu = tk.Menu(menubar, tearoff=0)
-        # helpmenu.add_command(label="About", command=self.hello)
-        # menubar.add_cascade(label="Help", menu=helpmenu)
-
-        # # display the menu
-        # self.root.config(menu=menubar)
-
         self.root.mainloop()
 
     def setup(self):
+        # Load json config
+        try:
+            config = json.load(open('config.json'))
+        except FileNotFoundError:
+            config = {}
+        self.line_width = config.get('width', self.DEFAULT['width'])
+        self.color = config.get('color', self.DEFAULT['color'])
+        self.bg_color = config.get('background', self.DEFAULT['background'])
+        self.mode = config.get('mode', self.DEFAULT['mode'])
+        self.alpha = config.get('alpha', self.DEFAULT['alpha'])
+
+        self.color_button.configure(background=self.color)
+        self.bg_color_button.configure(background=self.bg_color)
+        self.choose_size_button.set(self.line_width)
+        self.choose_alpha_button.set(self.alpha)
+
+        self.active_button = self.pen_button
         self.start_x = None
         self.start_y = None
         self.ghost = None
-        self.active_button = self.pen_button
-        self.line_width = self.DEFAULT['width']
-        self.color = self.DEFAULT['color']
-        self.bg_color = self.DEFAULT['background']
-        self.alpha = self.DEFAULT['alpha']
-        self.color_button.configure(background=self.color)
-        self.bg_color_button.configure(background=self.bg_color)
         self.text_input.set('')
-
-    def hello(self):
-        print("hello!")
 
     def use_pen(self):
         self.mode = 'pen'

@@ -1,3 +1,4 @@
+import json
 import socket
 import queue
 import threading
@@ -14,7 +15,7 @@ PORT = 4816
 class Painter():
 
     DEFAULT = {
-        'line': 5.0,
+        'width': 5.0,
         'color': '#000000',
         'background': '#ffffff',
         'mode': 'pen',
@@ -34,7 +35,7 @@ class Painter():
         self.text_input = tk.StringVar(self.root)
 
         # The canvas
-        self.c = tk.Canvas(self.root, bg=self.DEFAULT['background'])
+        self.c = tk.Canvas(self.root)
         # self.c.grid(row=2, columnspan=6, sticky='nesw')
         self.c.pack(expand=True, fill=tk.BOTH)
 
@@ -46,18 +47,43 @@ class Painter():
         # self.root.attributes('-alpha', .30)
         # self.root.wm_attributes('-alpha', .30)
 
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.root.mainloop()
 
+    def on_closing(self):
+        # dump position/size/parameters to a json file
+        config = {
+            'width': self.line_width,
+            'color': self.color,
+            'background': self.bg_color,
+            'mode': self.mode,
+            'alpha': self.alpha,
+            'geometry': self.root.geometry()
+        }
+        print(config)
+        json.dump(config, open('config.json', 'w'), indent=2)
+        self.root.destroy()
+
     def setup(self):
-        self.line_width = self.DEFAULT['line']
+        # Load json config
+        try:
+            config = json.load(open('config.json'))
+        except FileNotFoundError:
+            config = {}
+        self.line_width = config.get('width', self.DEFAULT['width'])
+        self.color = config.get('color', self.DEFAULT['color'])
+        self.bg_color = config.get('background', self.DEFAULT['background'])
+        self.mode = config.get('mode', self.DEFAULT['mode'])
+        self.alpha = config.get('alpha', self.DEFAULT['alpha'])
+        geometry = config.get('geometry', None)
+        if geometry:
+            self.root.geometry(geometry)
+        self.c.configure(bg=self.bg_color)
+
+        self.text_input.set('')
         self.start_x = None
         self.start_y = None
         self.ghost = None
-        self.color = self.DEFAULT['color']
-        self.bg_color = self.DEFAULT['background']
-        self.alpha = self.DEFAULT['alpha']
-        self.text_input.set('')
-        self.mode = self.DEFAULT['mode']
         self.c.bind('<Button-1>', self.draw_start)
         self.c.bind('<B1-Motion>', self.draw_motion)
         self.c.bind('<ButtonRelease-1>', self.draw_release)
