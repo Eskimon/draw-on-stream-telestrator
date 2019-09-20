@@ -124,32 +124,32 @@ class Painter():
 
     def key_up(self, event):
         ctrl = (event.state & 0x4) != 0
-        if event.keysym == 'z' and ctrl:
-            the_queue.put('undo')
-        if event.keysym == 'w' and ctrl:
-            the_queue.put('clean')
-        if event.char == 'r':
-            the_queue.put('mode rectangle')
-        if event.char == 'e':
-            the_queue.put('mode ellipse')
-        if event.char == 'p':
-            the_queue.put('mode pen')
-        if event.char == 'l':
-            the_queue.put('mode line')
-        if event.char == 'f':
-            the_queue.put('fill {}'.format(0 if self.fill_color else 1))
-        if event.char == '+':
-            if ctrl:
+        if ctrl:
+            if event.char == 'z':
+                the_queue.put('undo')
+            if event.char == 'w':
+                the_queue.put('clean')
+            if event.char == '+':
                 value = int(min(100, self.alpha + 5))
                 the_queue.put('alpha {}'.format(value))
-            else:
-                value = int(min(10, self.line_width + 1))
-                the_queue.put('width {}'.format(value))
-        if event.char == '-':
-            if ctrl:
+            if event.char == '-':
                 value = int(max(1, self.alpha - 5))
                 the_queue.put('alpha {}'.format(value))
-            else:
+        else:
+            if event.char == 'r':
+                the_queue.put('mode rectangle')
+            if event.char == 'e':
+                the_queue.put('mode ellipse')
+            if event.char == 'p':
+                the_queue.put('mode pen')
+            if event.char == 'l':
+                the_queue.put('mode line')
+            if event.char == 'f':
+                the_queue.put('fill {}'.format(0 if self.fill_color else 1))
+            if event.char == '+':
+                value = int(min(10, self.line_width + 1))
+                the_queue.put('width {}'.format(value))
+            if event.char == '-':
                 value = int(max(1, self.line_width - 1))
                 the_queue.put('width {}'.format(value))
 
