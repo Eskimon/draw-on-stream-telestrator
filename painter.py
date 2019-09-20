@@ -1,6 +1,7 @@
 import json
 import socket
 import queue
+import string
 import threading
 import tkinter as tk
 import tkinter.font as tkFont
@@ -32,6 +33,7 @@ class Painter():
         self.font = tkFont.Font(family='Helvetica', size=20)
         self.text_input = tk.StringVar(self.root)
         self.fill_color = None
+        self.letter_capture = False
 
         # The canvas
         self.c = tk.Canvas(self.root)
@@ -69,6 +71,7 @@ class Painter():
         except FileNotFoundError:
             config = {}
         self.line_width = config.get('width', self.DEFAULT['width'])
+        self.font.configure(size=(self.line_width * 5))
         self.color = config.get('color', self.DEFAULT['color'])
         self.bg_color = config.get('background', self.DEFAULT['background'])
         self.mode = config.get('mode', self.DEFAULT['mode'])
@@ -97,7 +100,7 @@ class Painter():
     def check_queue(self):
         while not the_queue.empty():
             message = the_queue.get(block=False).split(' ', 1)
-            # print('queue got', message)
+            print('queue got', message)
             # process message
             if message[0] == 'color':
                 self.color = message[1]
@@ -127,10 +130,19 @@ class Painter():
 
     def key_up(self, event):
         ctrl = (event.state & 0x4) != 0
-        print(event)
+        # print(event, '---', self.letter_capture)
         if event.keysym == 'Escape':
+            self.letter_capture = False
             the_queue.put('mode pen')
+            return
+        if self.letter_capture:
+            if event.char and event.char.isprintable():
+                the_queue.put('text {}'.format(event.char))
         if ctrl:
+            if event.keysym == 'l':
+                print('switch to capture mode')
+                self.letter_capture = True
+                the_queue.put('mode text')
             if event.keysym == 'z':
                 the_queue.put('undo')
             if event.keysym == 'w':
@@ -228,8 +240,9 @@ class Painter():
         if self.mode == 'ellipse':
             self.items.append(self.c.create_oval(self.start_x, self.start_y, event.x, event.y,
                                                  outline=self.color, fill=self.fill_color, width=self.line_width))
-        if self.mode == 'text':
+        if self.mode == 'text' and not self.letter_capture:
             self.mode = 'pen'
+
         self.reset(None)
 
     def draw_line_start(self, event):
