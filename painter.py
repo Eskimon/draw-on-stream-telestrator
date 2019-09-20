@@ -86,6 +86,9 @@ class Painter():
         self.c.bind('<Button-1>', self.draw_start)
         self.c.bind('<B1-Motion>', self.draw_motion)
         self.c.bind('<ButtonRelease-1>', self.draw_release)
+        self.c.bind('<Button-3>', self.draw_line_start)
+        self.c.bind('<B3-Motion>', self.draw_line_motion)
+        self.c.bind('<ButtonRelease-3>', self.draw_line_release)
         self.c.bind('<Motion>', self.motion)
         self.c.bind('<Leave>', self.reset)
         self.root.bind('<Key>', self.key_up)
@@ -227,6 +230,23 @@ class Painter():
                                                  outline=self.color, fill=self.fill_color, width=self.line_width))
         if self.mode == 'text':
             self.mode = 'pen'
+        self.reset(None)
+
+    def draw_line_start(self, event):
+        self.start_x = event.x
+        self.start_y = event.y
+
+    def draw_line_motion(self, event):
+        if self.ghost:
+            self.c.delete(self.ghost)
+        self.ghost = self.c.create_line(self.start_x, self.start_y, event.x, event.y,
+                                        width=self.line_width, fill=self.color,
+                                        capstyle=tk.ROUND, smooth=tk.TRUE, splinesteps=36)
+
+    def draw_line_release(self, event):
+        self.items.append(self.c.create_line(self.start_x, self.start_y, event.x, event.y,
+                                             width=self.line_width, fill=self.color,
+                                             capstyle=tk.ROUND, smooth=tk.TRUE, splinesteps=36))
         self.reset(None)
 
 
