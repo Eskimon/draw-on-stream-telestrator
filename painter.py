@@ -127,7 +127,9 @@ class Painter():
 
     def key_up(self, event):
         ctrl = (event.state & 0x4) != 0
-        # print(event)
+        print(event)
+        if event.keysym == 'Escape':
+            the_queue.put('mode pen')
         if ctrl:
             if event.keysym == 'z':
                 the_queue.put('undo')
@@ -146,8 +148,6 @@ class Painter():
                 the_queue.put('mode ellipse')
             if event.char == 'p':
                 the_queue.put('mode pen')
-            if event.char == 'l':
-                the_queue.put('mode line')
             if event.char == 'f':
                 the_queue.put('fill {}'.format(0 if self.fill_color else 1))
             if event.char == '+':
