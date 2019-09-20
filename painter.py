@@ -20,7 +20,7 @@ class Painter():
         'background': '#ffffff',
         'mode': 'pen',
         'alpha': 80,
-        'fill': 0,
+        'fill': None,
     }
 
     def __init__(self):
@@ -94,7 +94,7 @@ class Painter():
     def check_queue(self):
         while not the_queue.empty():
             message = the_queue.get(block=False).split(' ', 1)
-            print('queue got', message)
+            # print('queue got', message)
             # process message
             if message[0] == 'color':
                 self.color = message[1]
@@ -136,6 +136,8 @@ class Painter():
             the_queue.put('mode pen')
         if event.char == 'l':
             the_queue.put('mode line')
+        if event.char == 'f':
+            the_queue.put('fill {}'.format(0 if self.fill_color else 1))
         if event.char == '+':
             if ctrl:
                 value = int(min(100, self.alpha + 5))
@@ -248,8 +250,11 @@ class SocketThread(threading.Thread):
                         if not data:
                             break
                         data = data.decode()
-                        print('received:', data)
-                        the_queue.put(data)
+                        lines = data.split('\n')
+                        # print('received:', lines)
+                        for line in lines:
+                            if line:
+                                the_queue.put(line)
             print('socket disconnected')
 
 

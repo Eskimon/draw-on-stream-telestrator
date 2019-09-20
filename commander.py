@@ -229,7 +229,7 @@ class SocketThread(threading.Thread):
                     time.sleep(0.1)
                     while not the_queue.empty():
                         message = the_queue.get(block=False)
-                        print('queue got:', message)
+                        # print('queue got:', message)
                         s.sendall('{}\n'.format(message).encode())
             print('socket disconnected')
 
