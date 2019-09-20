@@ -140,7 +140,6 @@ class Painter():
                 the_queue.put('text {}'.format(event.char))
         if ctrl:
             if event.keysym == 'l':
-                print('switch to capture mode')
                 self.letter_capture = True
                 the_queue.put('mode text')
             if event.keysym == 'z':
