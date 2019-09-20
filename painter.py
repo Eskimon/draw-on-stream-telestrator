@@ -101,8 +101,8 @@ class Painter():
             elif message[0] == 'background':
                 self.bg_color = message[1]
                 self.c.configure(bg=self.bg_color)
-            elif message[0] == 'clean':
-                self.clean_canvas()
+            elif message[0] == 'wipe':
+                self.wipe_canvas()
             elif message[0] == 'undo':
                 self.undo()
             elif message[0] == 'mode':
@@ -124,11 +124,12 @@ class Painter():
 
     def key_up(self, event):
         ctrl = (event.state & 0x4) != 0
+        # print(event)
         if ctrl:
-            if event.char == 'z':
+            if event.keysym == 'z':
                 the_queue.put('undo')
-            if event.char == 'w':
-                the_queue.put('clean')
+            if event.keysym == 'w':
+                the_queue.put('wipe')
             if event.char == '+':
                 value = int(min(100, self.alpha + 5))
                 the_queue.put('alpha {}'.format(value))
@@ -159,7 +160,7 @@ class Painter():
             self.c.delete(item)
             self.items.pop()
 
-    def clean_canvas(self):
+    def wipe_canvas(self):
         self.items.clear()
         self.c.delete("all")
 

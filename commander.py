@@ -78,8 +78,8 @@ class Commander():
         self.choose_alpha_button.set(self.DEFAULT['alpha'])
         self.choose_alpha_button.grid(row=0, column=7)
 
-        self.clean_button = tk.Button(self.root, text='clean', command=self.clean)
-        self.clean_button.grid(row=0, column=8)
+        self.wipe_button = tk.Button(self.root, text='wipe', command=self.wipe)
+        self.wipe_button.grid(row=0, column=8)
 
         self.undo_button = tk.Button(self.root, text='undo', command=self.undo)
         self.undo_button.grid(row=0, column=9)
@@ -187,8 +187,8 @@ class Commander():
         self.alpha = value
         the_queue.put('alpha {}'.format(value))
 
-    def clean(self):
-        the_queue.put('clean')
+    def wipe(self):
+        the_queue.put('wipe')
 
     def undo(self):
         the_queue.put('undo')
