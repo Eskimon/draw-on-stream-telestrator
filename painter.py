@@ -20,6 +20,7 @@ class Painter():
         'background': '#ffffff',
         'mode': 'pen',
         'alpha': 80,
+        'fill': 0,
     }
 
     def __init__(self):
@@ -30,6 +31,7 @@ class Painter():
         self.items = []
         self.font = tkFont.Font(family='Helvetica', size=20)
         self.text_input = tk.StringVar(self.root)
+        self.fill_color = None
 
         # The canvas
         self.c = tk.Canvas(self.root)
@@ -41,8 +43,6 @@ class Painter():
 
         self.root.wait_visibility(self.root)
         self.root.wm_attributes('-alpha', self.alpha / 100.)
-        # self.root.attributes('-alpha', .30)
-        # self.root.wm_attributes('-alpha', .30)
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.root.mainloop()
@@ -55,6 +55,7 @@ class Painter():
             'background': self.bg_color,
             'mode': self.mode,
             'alpha': self.alpha,
+            'fill': self.fill_color,
             'geometry': self.root.geometry()
         }
         print(config)
@@ -72,6 +73,7 @@ class Painter():
         self.bg_color = config.get('background', self.DEFAULT['background'])
         self.mode = config.get('mode', self.DEFAULT['mode'])
         self.alpha = config.get('alpha', self.DEFAULT['alpha'])
+        self.fill_color = config.get('fill', self.DEFAULT['fill'])
         geometry = config.get('geometry', None)
         if geometry:
             self.root.geometry(geometry)
@@ -115,6 +117,8 @@ class Painter():
                 self.root.wm_attributes('-alpha', self.alpha / 100.)
             elif message[0] == 'text':
                 self.text_input.set(message[1])
+            elif message[0] == 'fill':
+                self.fill_color = self.color if int(message[1]) else None
         # check again later
         self.root.after(100, self.check_queue)
 
@@ -203,21 +207,21 @@ class Painter():
             if self.ghost:
                 self.c.delete(self.ghost)
             self.ghost = self.c.create_rectangle(self.start_x, self.start_y, event.x, event.y,
-                                                 outline=self.color, width=self.line_width)
+                                                 outline=self.color, fill=self.fill_color, width=self.line_width)
 
         if self.mode == 'ellipse':
             if self.ghost:
                 self.c.delete(self.ghost)
             self.ghost = self.c.create_oval(self.start_x, self.start_y, event.x, event.y,
-                                            outline=self.color, width=self.line_width)
+                                            outline=self.color, fill=self.fill_color, width=self.line_width)
 
     def draw_release(self, event):
         if self.mode == 'rectangle':
             self.items.append(self.c.create_rectangle(self.start_x, self.start_y, event.x, event.y,
-                                                      outline=self.color, width=self.line_width))
+                                                      outline=self.color, fill=self.fill_color, width=self.line_width))
         if self.mode == 'ellipse':
             self.items.append(self.c.create_oval(self.start_x, self.start_y, event.x, event.y,
-                                                 outline=self.color, width=self.line_width))
+                                                 outline=self.color, fill=self.fill_color, width=self.line_width))
         if self.mode == 'text':
             self.mode = 'pen'
         self.reset(None)
