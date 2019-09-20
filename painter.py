@@ -24,10 +24,7 @@ class Painter():
 
     def __init__(self):
         self.root = tk.Tk()
-
-        # Load config.json
-        # Place the window
-        # self.root.geometry("1000x900+10+10")
+        self.root.title("DrawOnStream - Painter")
 
         # Some variables
         self.items = []
