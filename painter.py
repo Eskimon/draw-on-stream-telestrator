@@ -1,11 +1,14 @@
 import json
-import socket
 import queue
+import socket
 import threading
+import time
 import tkinter as tk
 import tkinter.font as tkFont
 
 from collections import OrderedDict
+from functools import partial
+from tkinter.colorchooser import askcolor
 
 
 the_queue = queue.Queue()
@@ -13,12 +16,21 @@ the_queue = queue.Queue()
 HOST = 'localhost'
 PORT = 4816
 
+DEFAULT = {
+    'width': 5.0,
+    'color': '#000000',
+    'background': '#ffffff',
+    'mode': 'pen',
+    'alpha': 80,
+    'fill': None,
+}
+
 
 class StatusBar(tk.Frame):
 
     def __init__(self, master):
         super().__init__(master)
-        self.strings = OrderedDict()
+        self.strings = {}
         self.strings['color'] = tk.StringVar()
         self.strings['bg_color'] = tk.StringVar()
         self.strings['mode'] = tk.StringVar()
@@ -29,7 +41,8 @@ class StatusBar(tk.Frame):
         for idx, var in enumerate(self.strings):
             label = tk.Label(self, bd=1, relief=tk.SUNKEN, anchor=tk.W,
                              textvariable=self.strings[var],
-                             font=('arial', 10, 'normal'))
+                             font=('arial', 10, 'normal'),
+                             padx=5)
             # label.pack(fill=tk.X)
             label.grid(row=0, column=idx)
             self.labels[var] = label
@@ -52,16 +65,162 @@ class StatusBar(tk.Frame):
             self.strings['alpha'].set('opacity: {}'.format(kwargs['alpha']))
 
 
-class Painter():
+class MenuBar(tk.Frame):
 
-    DEFAULT = {
-        'width': 5.0,
-        'color': '#000000',
-        'background': '#ffffff',
-        'mode': 'pen',
-        'alpha': 80,
-        'fill': None,
-    }
+    QUICK_COLORS = [
+        '#FFFFFF',
+        '#000000',
+        '#1abc9c',
+        '#2ecc71',
+        '#3498db',
+        '#9b59b6',
+        '#34495e',
+        '#f1c40f',
+        '#e67e22',
+        '#e74c3c',
+        '#ecf0f1',
+        '#95a5a6',
+    ]
+
+    def __init__(self, master):
+        super().__init__(master)
+
+        # Some variables
+        self.text_input = tk.StringVar(self)
+        self.fill_status = tk.IntVar(self)
+
+        self.buttons = {}
+
+        # Build the interface
+        self.buttons['pen'] = tk.Button(self, text='pen', command=self.use_pen)
+        self.buttons['pen'].grid(row=0, column=0)
+
+        self.buttons['rectangle'] = tk.Button(self, text='rect', command=self.use_rect)
+        self.buttons['rectangle'].grid(row=0, column=1)
+
+        self.buttons['ellipse'] = tk.Button(self, text='ellipse', command=self.use_ellipse)
+        self.buttons['ellipse'].grid(row=0, column=2)
+
+        self.buttons['color'] = tk.Button(self, text='color', command=self.choose_color)
+        self.buttons['color'].grid(row=0, column=3)
+
+        self.buttons['bg_color'] = tk.Button(self, text='background', command=self.choose_bg_color)
+        self.buttons['bg_color'].grid(row=0, column=4)
+
+        self.buttons['eraser'] = tk.Button(self, text='eraser', command=self.use_eraser)
+        self.buttons['eraser'].grid(row=0, column=5)
+
+        self.choose_size_button = tk.Scale(self, from_=1, to=10, orient=tk.HORIZONTAL, command=self.update_width)
+        self.choose_size_button.set(DEFAULT['width'])
+        self.choose_size_button.grid(row=0, column=6)
+
+        self.choose_alpha_button = tk.Scale(self, from_=1, to=100, orient=tk.HORIZONTAL, command=self.update_alpha)
+        self.choose_alpha_button.set(DEFAULT['alpha'])
+        self.choose_alpha_button.grid(row=0, column=7)
+
+        self.wipe_button = tk.Button(self, text='wipe', command=self.wipe)
+        self.wipe_button.grid(row=0, column=8)
+
+        self.undo_button = tk.Button(self, text='undo', command=self.undo)
+        self.undo_button.grid(row=0, column=9)
+
+        self.buttons['fill'] = tk.Checkbutton(self, text='fill shapes', variable=self.fill_status, command=self.fill)
+        self.buttons['fill'].grid(row=1, column=0, columnspan=2)
+
+        self.frame_quick_colors = tk.Frame(self)
+        self.frame_quick_colors.grid(row=1, column=2, columnspan=7)
+
+        for color in self.QUICK_COLORS:
+            btn = tk.Button(self.frame_quick_colors, relief='ridge', overrelief='ridge', bg=color,
+                            command=partial(self.quick_color, color), activebackground=color)
+            btn.pack(side=tk.LEFT)
+
+        self.text_entry = tk.Entry(self, width=75, textvariable=self.text_input)
+        self.text_entry.grid(row=2, column=0, columnspan=9)
+        self.buttons['text'] = tk.Button(self, text='text', command=self.use_text)
+        self.buttons['text'].grid(row=2, column=9)
+
+        self.active_button = self.buttons['pen']
+
+    def update_status(self, **kwargs):
+        if 'color' in kwargs.keys():
+            self.buttons['color'].configure(background=kwargs['color'])
+        if 'bg_color' in kwargs.keys():
+            self.buttons['bg_color'].configure(background=kwargs['bg_color'])
+        if 'mode' in kwargs.keys():
+            self.activate_button(self.buttons[kwargs['mode']])
+        if 'fill' in kwargs.keys():
+            self.fill_status.set(1 if kwargs['fill'] else 0)
+        if 'width' in kwargs.keys():
+            self.choose_size_button.set(kwargs['width'])
+        if 'alpha' in kwargs.keys():
+            self.choose_alpha_button.set(kwargs['alpha'])
+
+    def use_pen(self):
+        self.activate_button(self.buttons['pen'])
+        the_queue.put('mode pen')
+
+    def use_rect(self):
+        self.activate_button(self.buttons['rectangle'])
+        the_queue.put('mode rectangle')
+
+    def use_ellipse(self):
+        self.activate_button(self.buttons['ellipse'])
+        the_queue.put('mode ellipse')
+
+    def choose_color(self):
+        color = self.buttons['color'].configure()['background'][4]
+        color = askcolor(color=color)[1]
+        if not color:
+            return
+        self.buttons['color'].configure(background=color)
+        the_queue.put('color {}'.format(color))
+
+    def choose_bg_color(self):
+        color = self.buttons['bg_color'].configure()['background'][4]
+        color = askcolor(color=color)[1]
+        if not color:
+            return
+        self.buttons['bg_color'].configure(background=color)
+        the_queue.put('background {}'.format(color))
+
+    def use_eraser(self):
+        self.activate_button(self.buttons['eraser'])
+        the_queue.put('mode eraser')
+
+    def use_text(self):
+        self.activate_button(self.buttons['text'])
+        the_queue.put('text {}'.format(self.text_input.get()))
+        the_queue.put('mode text')
+
+    def activate_button(self, some_button):
+        self.active_button.config(relief=tk.RAISED)
+        some_button.config(relief=tk.SUNKEN)
+        self.active_button = some_button
+
+    def update_width(self, value):
+        value = int(value)
+        the_queue.put('width {}'.format(value))
+
+    def update_alpha(self, value):
+        value = int(value)
+        the_queue.put('alpha {}'.format(value))
+
+    def wipe(self):
+        the_queue.put('wipe')
+
+    def undo(self):
+        the_queue.put('undo')
+
+    def fill(self):
+        the_queue.put('fill {}'.format(self.fill_status.get()))
+
+    def quick_color(self, color):
+        self.buttons['color'].configure(background=color)
+        the_queue.put('color {}'.format(color))
+
+
+class Painter():
 
     def __init__(self):
         self.root = tk.Tk()
@@ -75,6 +234,9 @@ class Painter():
         self.letter_capture = False
 
         # The canvas
+        self.menu_bar = MenuBar(self.root)
+        self.menu_bar.pack(side=tk.TOP, fill=tk.X)
+
         self.c = tk.Canvas(self.root)
         self.c.pack(expand=True, fill=tk.BOTH)
 
@@ -84,6 +246,14 @@ class Painter():
         # Initialize some stuff
         self.setup()
         self.status_bar.update_status(
+            width=self.line_width,
+            color=self.color,
+            bg_color=self.bg_color,
+            mode=self.mode,
+            alpha=self.alpha,
+            fill=self.fill_color
+        )
+        self.menu_bar.update_status(
             width=self.line_width,
             color=self.color,
             bg_color=self.bg_color,
@@ -119,13 +289,13 @@ class Painter():
             config = json.load(open('config.json'))
         except FileNotFoundError:
             config = {}
-        self.line_width = config.get('width', self.DEFAULT['width'])
+        self.line_width = config.get('width', DEFAULT['width'])
         self.font.configure(size=(self.line_width * 5))
-        self.color = config.get('color', self.DEFAULT['color'])
-        self.bg_color = config.get('background', self.DEFAULT['background'])
-        self.mode = config.get('mode', self.DEFAULT['mode'])
-        self.alpha = config.get('alpha', self.DEFAULT['alpha'])
-        self.fill_color = config.get('fill', self.DEFAULT['fill'])
+        self.color = config.get('color', DEFAULT['color'])
+        self.bg_color = config.get('background', DEFAULT['background'])
+        self.mode = config.get('mode', DEFAULT['mode'])
+        self.alpha = config.get('alpha', DEFAULT['alpha'])
+        self.fill_color = config.get('fill', DEFAULT['fill'])
         geometry = config.get('geometry', None)
         if geometry:
             self.root.geometry(geometry)
@@ -149,14 +319,17 @@ class Painter():
     def check_queue(self):
         while not the_queue.empty():
             message = the_queue.get(block=False).split(' ', 1)
-            print('queue got', message)
+            # print('queue got', message)
             # process message
             if message[0] == 'color':
                 self.color = message[1]
+                self.status_bar.update_status(color=self.color)
+                self.menu_bar.update_status(color=self.color)
             elif message[0] == 'background':
                 self.bg_color = message[1]
                 self.c.configure(bg=self.bg_color)
                 self.status_bar.update_status(bg_color=self.bg_color)
+                self.menu_bar.update_status(bg_color=self.bg_color)
             elif message[0] == 'wipe':
                 self.wipe_canvas()
             elif message[0] == 'undo':
@@ -165,20 +338,26 @@ class Painter():
                 self.mode = message[1]
                 self.reset(None)
                 self.status_bar.update_status(mode=self.mode)
+                self.menu_bar.update_status(mode=self.mode)
             elif message[0] == 'width':
                 width = int(message[1])
                 self.line_width = width
                 self.font.configure(size=(width * 5))
                 self.status_bar.update_status(width=self.line_width)
+                self.menu_bar.update_status(width=self.line_width)
             elif message[0] == 'alpha':
                 self.alpha = int(message[1])
                 self.root.wm_attributes('-alpha', self.alpha / 100.)
                 self.status_bar.update_status(alpha=self.alpha)
+                self.menu_bar.update_status(alpha=self.alpha)
             elif message[0] == 'text':
                 self.text_input.set(message[1])
+                self.status_bar.update_status(text=message[1])
+                self.menu_bar.update_status(text=message[1])
             elif message[0] == 'fill':
                 self.fill_color = self.color if int(message[1]) else None
                 self.status_bar.update_status(fill=self.fill_color)
+                self.menu_bar.update_status(fill=self.fill_color)
         # check again later
         self.root.after(100, self.check_queue)
 
@@ -295,6 +474,8 @@ class Painter():
                                                  outline=self.color, fill=self.fill_color, width=self.line_width))
         if self.mode == 'text' and not self.letter_capture:
             self.mode = 'pen'
+            self.status_bar.update_status(mode=self.mode)
+            self.menu_bar.update_status(mode=self.mode)
 
         self.reset(None)
 
@@ -333,6 +514,7 @@ class SocketThread(threading.Thread):
                 with conn:
                     print('Connected by', addr)
                     while True:
+                        time.sleep(0.1)
                         data = conn.recv(1024)
                         if not data:
                             break
