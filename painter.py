@@ -125,10 +125,10 @@ class MenuBar(tk.Frame):
         self.undo_button.grid(row=0, column=9)
 
         self.buttons['fill'] = tk.Checkbutton(self, text='fill shapes', variable=self.fill_status, command=self.fill)
-        self.buttons['fill'].grid(row=1, column=0, columnspan=2)
+        self.buttons['fill'].grid(row=0, column=10)
 
         self.frame_quick_colors = tk.Frame(self)
-        self.frame_quick_colors.grid(row=1, column=2, columnspan=7)
+        self.frame_quick_colors.grid(row=0, column=11)
 
         for color in self.QUICK_COLORS:
             btn = tk.Button(self.frame_quick_colors, relief='ridge', overrelief='ridge', bg=color,
@@ -136,9 +136,9 @@ class MenuBar(tk.Frame):
             btn.pack(side=tk.LEFT)
 
         self.text_entry = tk.Entry(self, width=75, textvariable=self.text_input)
-        self.text_entry.grid(row=2, column=0, columnspan=9)
+        self.text_entry.grid(row=0, column=12)
         self.buttons['text'] = tk.Button(self, text='text', command=self.use_text)
-        self.buttons['text'].grid(row=2, column=9)
+        self.buttons['text'].grid(row=0, column=13)
 
         self.active_button = self.buttons['pen']
 
