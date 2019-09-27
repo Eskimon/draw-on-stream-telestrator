@@ -1,3 +1,9 @@
+```
+TL;DR: Download the painter.py file, run it and BOOM! you are done.
+
+(but do not forget to install Python if you are on Windows)
+```
+
 # Draw on stream
 
 This software is designed to help you to easy draw on your stream with tools like OBS Studio or StreamLabs. It is also known as a *telestrator* tool.
