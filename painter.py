@@ -1,16 +1,55 @@
 import json
 import socket
 import queue
-import string
 import threading
 import tkinter as tk
 import tkinter.font as tkFont
+
+from collections import OrderedDict
 
 
 the_queue = queue.Queue()
 
 HOST = 'localhost'
 PORT = 4816
+
+
+class StatusBar(tk.Frame):
+
+    def __init__(self, master):
+        super().__init__(master)
+        self.strings = OrderedDict()
+        self.strings['color'] = tk.StringVar()
+        self.strings['bg_color'] = tk.StringVar()
+        self.strings['mode'] = tk.StringVar()
+        self.strings['fill'] = tk.StringVar()
+        self.strings['width'] = tk.StringVar()
+        self.strings['alpha'] = tk.StringVar()
+        self.labels = {}
+        for idx, var in enumerate(self.strings):
+            label = tk.Label(self, bd=1, relief=tk.SUNKEN, anchor=tk.W,
+                             textvariable=self.strings[var],
+                             font=('arial', 10, 'normal'))
+            # label.pack(fill=tk.X)
+            label.grid(row=0, column=idx)
+            self.labels[var] = label
+        self.pack()
+
+    def update_status(self, **kwargs):
+        if 'color' in kwargs.keys():
+            self.strings['color'].set('color: {}'.format(kwargs['color']))
+            self.labels['color'].configure(bg=kwargs['color'])
+        if 'bg_color' in kwargs.keys():
+            self.strings['bg_color'].set('bg_color: {}'.format(kwargs['bg_color']))
+            self.labels['bg_color'].configure(bg=kwargs['bg_color'])
+        if 'mode' in kwargs.keys():
+            self.strings['mode'].set('mode: {}'.format(kwargs['mode']))
+        if 'fill' in kwargs.keys():
+            self.strings['fill'].set('fill: {}'.format('on' if kwargs['fill'] else 'off'))
+        if 'width' in kwargs.keys():
+            self.strings['width'].set('width: {}'.format(kwargs['width']))
+        if 'alpha' in kwargs.keys():
+            self.strings['alpha'].set('opacity: {}'.format(kwargs['alpha']))
 
 
 class Painter():
@@ -37,11 +76,21 @@ class Painter():
 
         # The canvas
         self.c = tk.Canvas(self.root)
-        # self.c.grid(row=2, columnspan=6, sticky='nesw')
         self.c.pack(expand=True, fill=tk.BOTH)
+
+        self.status_bar = StatusBar(self.root)
+        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
         # Initialize some stuff
         self.setup()
+        self.status_bar.update_status(
+            width=self.line_width,
+            color=self.color,
+            bg_color=self.bg_color,
+            mode=self.mode,
+            alpha=self.alpha,
+            fill=self.fill_color
+        )
 
         self.root.wait_visibility(self.root)
         self.root.wm_attributes('-alpha', self.alpha / 100.)
@@ -107,6 +156,7 @@ class Painter():
             elif message[0] == 'background':
                 self.bg_color = message[1]
                 self.c.configure(bg=self.bg_color)
+                self.status_bar.update_status(bg_color=self.bg_color)
             elif message[0] == 'wipe':
                 self.wipe_canvas()
             elif message[0] == 'undo':
@@ -114,17 +164,21 @@ class Painter():
             elif message[0] == 'mode':
                 self.mode = message[1]
                 self.reset(None)
+                self.status_bar.update_status(mode=self.mode)
             elif message[0] == 'width':
                 width = int(message[1])
                 self.line_width = width
                 self.font.configure(size=(width * 5))
+                self.status_bar.update_status(width=self.line_width)
             elif message[0] == 'alpha':
                 self.alpha = int(message[1])
                 self.root.wm_attributes('-alpha', self.alpha / 100.)
+                self.status_bar.update_status(alpha=self.alpha)
             elif message[0] == 'text':
                 self.text_input.set(message[1])
             elif message[0] == 'fill':
                 self.fill_color = self.color if int(message[1]) else None
+                self.status_bar.update_status(fill=self.fill_color)
         # check again later
         self.root.after(100, self.check_queue)
 
