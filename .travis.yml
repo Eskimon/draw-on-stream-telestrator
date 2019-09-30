@@ -5,6 +5,7 @@ install:
 - pip install pyinstaller
 script:
 - pyinstaller -F -w painter.py
+- ls -la ./dist/
 deploy:
   provider: releases
   api_key:
