@@ -1,0 +1,31 @@
+language: python
+sudo: false
+
+install:
+  - pip install flake8
+  - pip install pyinstaller
+
+script:
+  - pyinstaller -F -w painter.py
+
+before_deploy:
+  # Set up git user name and tag this commit
+  - git config --local user.name "Eskimon"
+  - git config --local user.email "eskimon@outlook.com"
+  - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+  - git tag $TRAVIS_TAG
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    # Your *encrypted* GitHub key, as the output of the Travis CI CLI tool.
+    secure: hGy/2Gg6GtKu0RIkzqvS0HopPTiVhFzHphTI1aG0KnEhb4eElVZ8Z5xPsZ8z6gqDZCyQo4Yb37P3LAoMZ1Zo7jnK8Eh/6l+B1wd80RApRpgJ66csaYisthnO0r+sEz6eh/N3eKHcesgQcRsVWJoHuYtYiTqfOiMbW0UwNGzXq3tEov+HaYbyajpsj127F8w3KpfNhJcYcb0ZBl8AVxp2TH+gbvrZ7DL5eg7aDpFn0mHq4zAxNd6ie8LLkRbfcawctFOKhW1a8dWlB3ILucDakadM8NBpZBJF8FyoU8eSU/6Eb5Qt54xCPNqo2o+CGXEMJeYD8UBUm4h0PrGpjX8Vg99CQLCf8pgtnlvtK88V0U0XirXZxhxLQt+Vnwik/R0kZXai50Yh7wp6/asnDHRpMaEfTZxLpJO2M999zEH2gM1iRh7EQrGwG5G689+Dl+SmA41o/MVo24admO6LxFUubD9U9cWMR8Q2GOl/PkKyoP830W3qpvfllOtDqaVaV4xH2SEWMqzJWOTD+QsCdagy6MwLfndYtaZLz/v0HmUyMq8hgX/B42HZbATOUelpZhr8qNU4J36Csfu7axh/Y3/zQJMq5/pASUvgp+7jbv0Va0D+nHCXAgFg1ki3mxTK8Q6FZ84zWyzby2/FgpoN0iu/MtPKCWf3SqV9IfR9j85LzCo=
+  file:
+  # The names of the binaries to output, based on the -output template passed to gox.
+  - dist/painter.exe
+  on:
+    # What to repository to build
+    repo: Eskimon/draw-on-stream-telestrator
+    # Only build binaries for tagged commits
+    tags: true
