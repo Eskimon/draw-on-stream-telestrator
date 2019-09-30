@@ -289,12 +289,12 @@ class Painter():
             config = json.load(open('config.json'))
         except FileNotFoundError:
             config = {}
-        self.line_width = config.get('width', DEFAULT['width'])
+        self.line_width = int(config.get('width', DEFAULT['width']))
         self.font.configure(size=(self.line_width * 5))
         self.color = config.get('color', DEFAULT['color'])
         self.bg_color = config.get('background', DEFAULT['background'])
         self.mode = config.get('mode', DEFAULT['mode'])
-        self.alpha = config.get('alpha', DEFAULT['alpha'])
+        self.alpha = int(config.get('alpha', DEFAULT['alpha']))
         self.fill_color = config.get('fill', DEFAULT['fill'])
         geometry = config.get('geometry', None)
         if geometry:
