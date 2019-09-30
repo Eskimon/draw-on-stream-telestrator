@@ -13,3 +13,4 @@ deploy:
   file: dist/painter.exe
   on:
     repo: Eskimon/draw-on-stream-telestrator
+    tags: true
