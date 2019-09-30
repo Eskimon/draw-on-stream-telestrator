@@ -12,3 +12,4 @@ deploy:
   file: dist/replay.exe
   on:
     repo: Eskimon/draw-on-stream-telestrator
+    tags: true
