@@ -4,13 +4,15 @@ install:
 - pip install flake8
 - pip install pyinstaller
 script:
-- pyinstaller -F -w painter.py
+- pyinstaller -F -w -n painter.py
 - mv ./dist/painter ./dist/painter.exe
 deploy:
   provider: releases
+  skip_cleanup: true
   api_key:
     secure: Z3Cfos03QDT3Gd6MdWEk9nraQQs8EInXaWQI3SMhRburCHgyWuZw7Qeq4Spig+Mz82zWo8wWVwseaeGANVHiUmWXRbhHdvoKzOjvCyAVEYEjedwA/azP3Rzivy4J68PCkpyDPZIgU7Dd0pqvHeey8aAJkpC6bbmORPDVN3XM82xSPLILE2E0HjEvRa/wTWTspbFSjpQZ1Sf2dysO6FDVMNgdtjGTXBYX1ba8iXNMCKDRTqiIbzooXm1jxUqKJZc4+MCkU5CdDk9yytFN46BYXK2YaUHrNx2CmkK6xhrWveNDUO0At4YBIwbQkZ2MfLkt2OZKYbaohSGIgLIt3dkcfz8rmQOaNtaQpC0+cHcJAqJYYKbQih6qFp/OQjjsadvN1RKs99q6qwModbT+lnCie5N4GYP5EQAsySfVVbsZfU+6Y9LX0AS1jD4qSAYUdTTcd42es2q0zrxB+L47PMeMPb0Yt51ywOjCXkl+7cnv2snBSTuQ72iFdbKV2jJnzlTwZ1ZIM90L97s/+9aghqvzEc9/W1j5miLEP6sh1GCIbKGVrJP68a3Y8bmlgSb8sYcj3jmz4F5Y+0b3guYuoV/zskiM2LhjsnfRAC1zoGXE+ubqnxntAaBEjujY+jHXQEV6mk1pzaZAdpgpMnkKDMNbLiZ+fNMcZyq/8O4XX6wdud8=
-  file: dist/painter.exe
+  file:
+    - dist/painter.exe
   on:
     repo: Eskimon/draw-on-stream-telestrator
     tags: true
