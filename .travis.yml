@@ -1,21 +1,15 @@
 language: python
 sudo: false
-
 install:
-  - pip install flake8
-  - pip install pyinstaller
-
+- pip install flake8
+- pip install pyinstaller
 script:
-  - pyinstaller -F -w painter.py
-
+- pyinstaller -F -w painter.py
 deploy:
   provider: releases
-  skip_cleanup: true
+  file: dist/painter.exe
   api_key:
-    secure: B5pDFv25m+rNfI3ETI0Re2MlWkQb30DaHGaYP2KFR9nxVTuNHslcoglzAo723ut7o4mNTOhXZiVfrnsvyGmFFWxxhp0lWhN3QlgIav3uwnxaTvoWFen7cEFXa+XlKMs8OY8n2JlzsQzENKaXsZ3enXThBVhUuMrCM/YAg6YpSKmGZmN1LSNxw+j9xovxjy2d0v8LzgNPJJMOjJRyO6OWnbO9rPZ+q/wa7PSKhhGu/bhjorTOuXCnuZh4zIutNJYC4nq55RrE11I/Uj0jqm0TnOFyYKV276NafhirkAIM5QaRyPjPlnB3SNnDEEraY7xqYAb4jMW8jMPK5+PSoyckhPxGvOLH+S7Xkq4w1xjKS2cS3bL6TgWh2qySoxQdiAew5+mtSv+FdOdqDBkbY17RaLX4hNAySrDOr5yEOcajdkdt5VOXXtv0w4efABgNT7Xsh7kmJDcYFD8gpMeuEQIw/XpMT+SUQlD+q5qmHVPNrpdqqWmBwm4FzWvcPGSExfXFJ4T83xCyr85E9DxOePLohiiZmNxmiOh4Jc68XPn73spNU1HCyPC1ZltaDVQZP7GinAmyS2ZgEp6iRNsSoLc8VkNqoF7IxggYHg/vt696ybyD4GENDYmnmyhp+CCmTUvQsLsUGkW/dK9Faa1WTGJZsMVWecIu5+sGnn9JdmmAXXc=
-  file:
-    # The names of the binaries to output
-    - dist/painter.exe
+    secure: m12ZFZMy3tneNEBR/u3fZSj+A0gnGBEoKtViuGXstcwEZVq2HRsRpKK2NK+8UUzRBN8LHZNxpTa+qonCk8bY42nmSTzzlEmVvEX3pmSkRDFtX30m3rW8xWLUGnfKB8tINySl0cEa880w/4k9NwBblChJMtN6zpgUMc1eZNySJ9tH4ehofugHFweyByKrfHj8o0OKpkEOAsCvlem4EpYvj35gMewJKWzOzHeN8fFsVcN9YbS8pqwjbZqMqy0OyJWpnPBV5kdFvW7tYfcCuBPLFqL6rykPvovISu8OF0k9zHeMrqdeqwSuTQF31N9GVEYf9A75NatV634V44taRmIQccySxlZY+zgcR55Gg/YE1zoSaSjj/RtrUlUuyWquYHFAHOMPYtuC93F1Wb8mAia+dI98FUCm+J1xbo8sRi6Ue2e7+8p9jHqL06m0GFY/LGXeYGge2mYF0baWAbQ5EizN9IIbd0yMJVd+U+y3ye6FyxAeZ7EOthRO4OQmaEI6w3DkD3lT1HlD8ZFHR55mX/jiUH7KkAFNQhRUBsy36cF/CmH9nU+uH0ZyRFZTxjgGI+q13vQHzLL1qPwef46A8UXJHHQcyjShUj8nm5Npx/o9tfuEIBmTTmpkA45nO8R65on3of6bkKPZsGPHR9ANPu6cczuJ+lG3hsfYbtl9KVgzC6g=
   on:
     repo: Eskimon/draw-on-stream-telestrator
     tags: true
