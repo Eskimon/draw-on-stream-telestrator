@@ -12,13 +12,10 @@ deploy:
   provider: releases
   skip_cleanup: true
   api_key:
-    # Your *encrypted* GitHub key, as the output of the Travis CI CLI tool.
-    secure: hGy/2Gg6GtKu0RIkzqvS0HopPTiVhFzHphTI1aG0KnEhb4eElVZ8Z5xPsZ8z6gqDZCyQo4Yb37P3LAoMZ1Zo7jnK8Eh/6l+B1wd80RApRpgJ66csaYisthnO0r+sEz6eh/N3eKHcesgQcRsVWJoHuYtYiTqfOiMbW0UwNGzXq3tEov+HaYbyajpsj127F8w3KpfNhJcYcb0ZBl8AVxp2TH+gbvrZ7DL5eg7aDpFn0mHq4zAxNd6ie8LLkRbfcawctFOKhW1a8dWlB3ILucDakadM8NBpZBJF8FyoU8eSU/6Eb5Qt54xCPNqo2o+CGXEMJeYD8UBUm4h0PrGpjX8Vg99CQLCf8pgtnlvtK88V0U0XirXZxhxLQt+Vnwik/R0kZXai50Yh7wp6/asnDHRpMaEfTZxLpJO2M999zEH2gM1iRh7EQrGwG5G689+Dl+SmA41o/MVo24admO6LxFUubD9U9cWMR8Q2GOl/PkKyoP830W3qpvfllOtDqaVaV4xH2SEWMqzJWOTD+QsCdagy6MwLfndYtaZLz/v0HmUyMq8hgX/B42HZbATOUelpZhr8qNU4J36Csfu7axh/Y3/zQJMq5/pASUvgp+7jbv0Va0D+nHCXAgFg1ki3mxTK8Q6FZ84zWyzby2/FgpoN0iu/MtPKCWf3SqV9IfR9j85LzCo=
+    secure: bgd9bCIWFsIGzVoh1YbrB9Jits8wDXB8pxHc6izJ8VoTEHn88QiUTzUY5PuwJldt/h7k18yV9KreuTHvhkMnMIrvO8gHfjYPoXWLPvkhIhPGIxA2X3vfiQoHYaXTCbMYrv4mOTDiZOzxyR4HDUXzvU3O0jSFna4lA2lsRVrvVPwT8vwdCxpupYn180f5+8/hMm3WxbK2pmyCCI0tOoRJlZd6nAeXxSG0raOMoga0KZudhE/VY1lTIt7TeM+S9ZqeRJbQ8M81amQDIXq0zDjxHEak3wZ53d/Ufi8SOSQ7IiCkfjbL6N3cnXk4M0Y8yvQxh5vk5DpWlN0P3eqkZozhtd3ezJbAJaUR0ruqRjFIrXsysr4XeKk51sp1TZcQ7S9nTHrowR4Fm2a0E3cJsKTktzdBEeTkr2lpeoS7uMypT852snjSu35OGhFDmtArwUmJiwsOGAlmvX6C6b+Em8U3JOHkPJJ65M/pR6Kawxpm+m/NK7HqJCEpCqbauXeOWMfcg85Q1txUvu6a79Oy1pIfJ6RCg8xXXido//2V2hwSToF8QbHmCjDLaUOBb1DQFlpcKYQrpiAmpW+qbHxQAlh/ZdC19HV89eGEKsylYTtQwPZIJPqzmBwuXsbZ1/T1K0eKyE7JdXs3OYyI6SBywUNwSCLfqAYFExA7710jFy/+96Y=
   file:
-    # The names of the binaries to output, based on the -output template passed to gox.
+    # The names of the binaries to output
     - dist/painter.exe
   on:
-    # What to repository to build
-    repo: Eskimon/draw-on-stream-telestrator
-    # Only build binaries for tagged commits
+    repo: eskimon/draw-on-stream-telestrator
     tags: true
