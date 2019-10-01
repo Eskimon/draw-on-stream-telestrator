@@ -1,20 +1,32 @@
-version: 1.0.{build}
 branches:
   only:
   - master
-skip_non_tags: true
-image:
-- Ubuntu1804
-- Visual Studio 2019
-build:
-  verbosity: minimal
+
+build: off
 test: off
+
+environment:
+  matrix:
+    - PYTHON: "C:\\Python36"
+      PYTHON_VERSION: "3.6.8"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_VERSION: "3.6.8"
+      PYTHON_ARCH: "64"
+
+init:
+  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
+
+install:
+  - "%PYTHON%/Scripts/pip.exe install pyinstaller"
+
+test_script:
+  - "echo test"
+  
+after_test:
+  - "pyinstaller.exe -w -F painter.py"
+  
 artifacts:
-- path: dist/painter
-  name: painter
-deploy:
-- provider: GitHub
-  auth_token:
-    secure: JBjlg8xq+B1ZXJhh2XVh83PoP0zn6CD+BNbsDEB97wGrilKAtskhOSNepq9sZv/iDF8HxGLbSJfExD3qoE2/5WihxctuL/VjlA3QE/zYomuMcICfPGPPJ6MPz5Ylrg/s/37p6/cMD3IZde2vIB/sGaVnX5qT1xlmCH4Axx79MKK5c3M6Y1EesVs+5RYhg/2jx0mdXJg3atMg2LoRVP4WfKkUsKZ5rFWjSFjTONgZEXG/vh3Xe+WGMMLnCC9o24G4xDJNP+fnO8jOYXSazXhXTLBUjAeGVofhtUuvYlCslKVN/x4stKJsHlP1eE51TIXejKFa60ueVRNbb1lgi+YzL78f7LaO/qobQPDGt2QyRdI3WvR3CPkOARGlMZZxXs3vt/ZhaZ2CJwXvLFkSllgqhFaRVKE0Lu5aKZKpv13MgZhkfw9Ns6Rs0meL5hlqarUR+xe+IiHIA5AbhX4HQCpx0jXS0ID4Q+/DjIv2F64gzOdoP48Otorvt+N3wKcY0u/MYliwZVBUwJKqlqa1BRixK/lllpBNSY6J58mlN8vT5ptco0PtRQJurXqSo6bp5l0KziyKMReaT0r5V+g5Q7JjX3Ho1XQtCuy8vPZoVppE4tX/X39Efd/2UzJAkR+dzGpb06rdLTaetK1wDwp/7bmO6Oj9He5w6QV4Gv+eeeyGrX6SbETia/ETYBrdHu7Tls8glGGQ2bNXUG1QgUxhTPUilDOV6Ty0nASsZ5Y1rXawdo9wqHK2zz2By5xGeP8OuHky5Q8MxXr9tiIEuFua5k/aeBEbmzHyKbTLlbWep91mEPm/AnetqOXwqbxa0iiGT9Bmyrn/aMwMECXvkTjtpEfnOgDJMfU2P1z7zX5dNl+C3I4KtqKt+QzOO1eMAEBlLE2M8SvJahlyqGVcF+8+0BrifQ==
-  artifact: painter
-  force_update: true
+  - path: dist/painter.exe
+    name: painter
