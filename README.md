@@ -1,6 +1,6 @@
 # TL;DR
 
-Download the `painter.exe` (or painter.py for Mac/Linux user) file from [the release page](https://github.com/Eskimon/draw-on-stream-telestrator/releases), run it and BOOM! you are done.
+Download the `painter.exe` (or `painter` for Linux user) file from [the release page](https://github.com/Eskimon/draw-on-stream-telestrator/releases), run it and BOOM! you are done.
 
 # Draw on stream
 
