@@ -25,8 +25,8 @@ test_script:
   - "echo test"
   
 after_test:
-  - "%PYTHON%/Scripts/pyinstaller.exe -w -F painter.py"
+  - "%PYTHON%/Scripts/pyinstaller.exe -w -F -n painter-%PYTHON_ARCH%bits.exe painter.py"
   
 artifacts:
-  - path: dist/painter.exe
+  - path: "dist/painter-%PYTHON_ARCH%bits.exe"
     name: painter
