@@ -2,6 +2,8 @@
 
 Download the `painter.exe` (or `painter` for Linux user) file from [the release page](https://github.com/Eskimon/draw-on-stream-telestrator/releases), run it and BOOM! you are done.
 
+*If Windows is showing you a warning screen, you can either trust me and go through, or dowload the `painter.py` file and execute it yourself (but don't forget to install Python then).*
+
 # Draw on stream
 
 This software is designed to help you to easy draw on your stream with tools like OBS Studio or StreamLabs. It is also known as a *telestrator* tool.
