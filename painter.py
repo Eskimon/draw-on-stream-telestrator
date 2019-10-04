@@ -6,7 +6,6 @@ import time
 import tkinter as tk
 import tkinter.font as tkFont
 
-from collections import OrderedDict
 from functools import partial
 from tkinter.colorchooser import askcolor
 
@@ -37,6 +36,8 @@ class StatusBar(tk.Frame):
         self.strings['fill'] = tk.StringVar()
         self.strings['width'] = tk.StringVar()
         self.strings['alpha'] = tk.StringVar()
+        self.strings['win_position'] = tk.StringVar()
+        self.strings['win_size'] = tk.StringVar()
         self.labels = {}
         for idx, var in enumerate(self.strings):
             label = tk.Label(self, bd=1, relief=tk.SUNKEN, anchor=tk.W,
@@ -63,6 +64,10 @@ class StatusBar(tk.Frame):
             self.strings['width'].set('width: {}'.format(kwargs['width']))
         if 'alpha' in kwargs.keys():
             self.strings['alpha'].set('opacity: {}'.format(kwargs['alpha']))
+        if 'win_position' in kwargs.keys():
+            self.strings['win_position'].set('({}, {})'.format(kwargs['win_position'][0], kwargs['win_position'][1]))
+        if 'win_size' in kwargs.keys():
+            self.strings['win_size'].set('({}, {})'.format(kwargs['win_size'][0], kwargs['win_size'][1]))
 
 
 class MenuBar(tk.Frame):
@@ -222,9 +227,11 @@ class MenuBar(tk.Frame):
 
 class Painter():
 
+    WIN_TITLE = 'DrawOnStream - Painter'
+
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("DrawOnStream - Painter")
+        self.root.title(self.WIN_TITLE)
 
         # Some variables
         self.items = []
@@ -265,8 +272,17 @@ class Painter():
         self.root.wait_visibility(self.root)
         self.root.wm_attributes('-alpha', self.alpha / 100.)
 
+        self.root.bind("<Configure>", self.on_configure)
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.root.mainloop()
+
+    def on_configure(self, event):
+        geometry = self.root.geometry()
+        geometry = geometry.replace('x', '#')
+        geometry = geometry.replace('+', '#')
+        geometry = geometry.split('#')
+        self.status_bar.update_status(win_position=(geometry[2], geometry[3]))
+        self.status_bar.update_status(win_size=(geometry[0], geometry[1]))
 
     def on_closing(self):
         # dump position/size/parameters to a json file
