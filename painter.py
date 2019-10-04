@@ -239,6 +239,8 @@ class Painter():
         self.text_input = tk.StringVar(self.root)
         self.fill_color = None
         self.letter_capture = False
+        self.shift_pressed = False
+        self.alt_pressed = False
 
         # The canvas
         self.menu_bar = MenuBar(self.root)
@@ -322,6 +324,7 @@ class Painter():
         self.start_y = None
         self.ghost = None
         self.c.bind('<Button-1>', self.draw_start)
+        self.c.bind('<Shift-Button-1>', self.draw_start_with_shift)
         self.c.bind('<B1-Motion>', self.draw_motion)
         self.c.bind('<ButtonRelease-1>', self.draw_release)
         self.c.bind('<Button-3>', self.draw_line_start)
@@ -433,6 +436,8 @@ class Painter():
             self.ghost = None
         self.start_x = None
         self.start_y = None
+        self.shift_pressed = False
+        self.alt_pressed = False
 
     def motion(self, event):
         if self.mode in ['pen', 'eraser']:
@@ -446,6 +451,10 @@ class Painter():
                 self.c.delete(self.ghost)
             self.ghost = self.c.create_text(event.x, event.y,
                                             text=self.text_input.get(), fill=self.color, font=self.font)
+
+    def draw_start_with_shift(self, event):
+        self.shift_pressed = True
+        self.draw_start(event)
 
     def draw_start(self, event):
         self.start_x = event.x
@@ -472,21 +481,29 @@ class Painter():
         if self.mode == 'rectangle':
             if self.ghost:
                 self.c.delete(self.ghost)
-            self.ghost = self.c.create_rectangle(self.start_x, self.start_y, event.x, event.y,
+            rect_x = event.x
+            rect_y = event.y if not self.shift_pressed else (self.start_y - (self.start_x - event.x))
+            self.ghost = self.c.create_rectangle(self.start_x, self.start_y, rect_x, rect_y,
                                                  outline=self.color, fill=self.fill_color, width=self.line_width)
 
         if self.mode == 'ellipse':
             if self.ghost:
                 self.c.delete(self.ghost)
-            self.ghost = self.c.create_oval(self.start_x, self.start_y, event.x, event.y,
+            rect_x = event.x
+            rect_y = event.y if not self.shift_pressed else (self.start_y - (self.start_x - event.x))
+            self.ghost = self.c.create_oval(self.start_x, self.start_y, rect_x, rect_y,
                                             outline=self.color, fill=self.fill_color, width=self.line_width)
 
     def draw_release(self, event):
         if self.mode == 'rectangle':
-            self.items.append(self.c.create_rectangle(self.start_x, self.start_y, event.x, event.y,
+            rect_x = event.x
+            rect_y = event.y if not self.shift_pressed else (self.start_y - (self.start_x - event.x))
+            self.items.append(self.c.create_rectangle(self.start_x, self.start_y, rect_x, rect_y,
                                                       outline=self.color, fill=self.fill_color, width=self.line_width))
         if self.mode == 'ellipse':
-            self.items.append(self.c.create_oval(self.start_x, self.start_y, event.x, event.y,
+            rect_x = event.x
+            rect_y = event.y if not self.shift_pressed else (self.start_y - (self.start_x - event.x))
+            self.items.append(self.c.create_oval(self.start_x, self.start_y, rect_x, rect_y,
                                                  outline=self.color, fill=self.fill_color, width=self.line_width))
         if self.mode == 'text' and not self.letter_capture:
             self.mode = 'pen'
