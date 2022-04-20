@@ -37,7 +37,7 @@ deploy:
   description: 'Release description'
   provider: GitHub
   auth_token:
-    secure: weR9ODcTuiGeOReR4uofzd9MaC/lRNkg0ColTzzzYvw/0jPHAuYM2v0JxMiwkpOe # your encrypted token from GitHub
+    secure: 9AXBVcFsLwmlIqRtE1Iiocs1T5pEvXTryofJpx8nlLCzmFfSI8gp7u6FabwSRIDI  # your encrypted token from GitHub
   artifact: painter
   draft: false
   prerelease: false
