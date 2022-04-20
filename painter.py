@@ -107,44 +107,47 @@ class MenuBar(tk.Frame):
         self.buttons['ellipse'] = tk.Button(self, text='ellipse', command=self.use_ellipse)
         self.buttons['ellipse'].grid(row=0, column=2)
 
+        self.buttons['arrow'] = tk.Button(self, text='arrow', command=self.use_arrow)
+        self.buttons['arrow'].grid(row=0, column=3)
+
         self.buttons['color'] = tk.Button(self, text='color', command=self.choose_color)
-        self.buttons['color'].grid(row=0, column=3)
+        self.buttons['color'].grid(row=0, column=4)
 
         self.buttons['bg_color'] = tk.Button(self, text='background', command=self.choose_bg_color)
-        self.buttons['bg_color'].grid(row=0, column=4)
+        self.buttons['bg_color'].grid(row=0, column=5)
 
         self.buttons['eraser'] = tk.Button(self, text='eraser', command=self.use_eraser)
-        self.buttons['eraser'].grid(row=0, column=5)
+        self.buttons['eraser'].grid(row=0, column=6)
 
         self.choose_size_button = tk.Scale(self, from_=1, to=10, orient=tk.HORIZONTAL, command=self.update_width)
         self.choose_size_button.set(DEFAULT['width'])
-        self.choose_size_button.grid(row=0, column=6)
+        self.choose_size_button.grid(row=0, column=7)
 
         self.choose_alpha_button = tk.Scale(self, from_=1, to=100, orient=tk.HORIZONTAL, command=self.update_alpha)
         self.choose_alpha_button.set(DEFAULT['alpha'])
-        self.choose_alpha_button.grid(row=0, column=7)
+        self.choose_alpha_button.grid(row=0, column=8)
 
         self.wipe_button = tk.Button(self, text='wipe', command=self.wipe)
-        self.wipe_button.grid(row=0, column=8)
+        self.wipe_button.grid(row=0, column=9)
 
         self.undo_button = tk.Button(self, text='undo', command=self.undo)
-        self.undo_button.grid(row=0, column=9)
+        self.undo_button.grid(row=0, column=10)
 
         self.buttons['fill'] = tk.Checkbutton(self, text='fill shapes', variable=self.fill_status, command=self.fill)
-        self.buttons['fill'].grid(row=0, column=10)
+        self.buttons['fill'].grid(row=0, column=11)
 
         self.frame_quick_colors = tk.Frame(self)
-        self.frame_quick_colors.grid(row=0, column=11)
+        self.frame_quick_colors.grid(row=0, column=12)
 
         for color in self.QUICK_COLORS:
             btn = tk.Button(self.frame_quick_colors, relief='ridge', overrelief='ridge', bg=color,
                             command=partial(self.quick_color, color), activebackground=color)
             btn.pack(side=tk.LEFT)
 
-        self.text_entry = tk.Entry(self, width=75, textvariable=self.text_input)
-        self.text_entry.grid(row=0, column=12)
+        self.text_entry = tk.Entry(self, width=60, textvariable=self.text_input)
+        self.text_entry.grid(row=0, column=13)
         self.buttons['text'] = tk.Button(self, text='text', command=self.use_text)
-        self.buttons['text'].grid(row=0, column=13)
+        self.buttons['text'].grid(row=0, column=14)
 
         self.active_button = self.buttons['pen']
 
@@ -173,6 +176,10 @@ class MenuBar(tk.Frame):
     def use_ellipse(self):
         self.activate_button(self.buttons['ellipse'])
         the_queue.put('mode ellipse')
+
+    def use_arrow(self):
+        self.activate_button(self.buttons['arrow'])
+        the_queue.put('mode arrow')
 
     def choose_color(self):
         color = self.buttons['color'].configure()['background'][4]
@@ -413,6 +420,8 @@ class Painter():
                 the_queue.put('mode rectangle')
             if event.char == 'e':
                 the_queue.put('mode ellipse')
+            if event.char == 'a':
+                the_queue.put('mode arrow')
             if event.char == 'p':
                 the_queue.put('mode pen')
             if event.char == 'f':
@@ -526,6 +535,29 @@ class Painter():
                 self.ghost = self.c.create_oval(self.start_x, self.start_y, event.x, event.y,
                                                 outline=self.color, fill=self.fill_color, width=self.line_width)
 
+        if self.mode == 'arrow':
+            if self.ghost:
+                self.c.delete(self.ghost)
+
+            tip1 = (
+                event.x + (0.2 * (((self.start_x - event.x) * math.cos(math.pi / 6)) + ((self.start_y - event.y) * math.sin(math.pi / 6)))),
+                event.y + (0.2 * (((self.start_y - event.y) * math.cos(math.pi / 6)) - ((self.start_x - event.x) * math.sin(math.pi / 6))))
+            )
+            tip2 = (
+                event.x + (0.2 * (((self.start_x - event.x) * math.cos(math.pi / 6)) - ((self.start_y - event.y) * math.sin(math.pi / 6)))),
+                event.y + (0.2 * (((self.start_y - event.y) * math.cos(math.pi / 6)) + ((self.start_x - event.x) * math.sin(math.pi / 6))))
+            )
+            self.ghost = self.c.create_polygon(
+                self.start_x, self.start_y,
+                event.x, event.y,
+                tip1[0], tip1[1],
+                event.x, event.y,
+                tip2[0], tip2[1],
+                event.x, event.y,
+                outline=self.color, fill=self.fill_color, width=self.line_width
+            )
+
+
     def draw_release(self, event):
         if self.mode == 'rectangle':
             if self.shift_pressed:
@@ -567,6 +599,25 @@ class Painter():
             self.mode = 'pen'
             self.status_bar.update_status(mode=self.mode)
             self.menu_bar.update_status(mode=self.mode)
+
+        if self.mode == 'arrow':
+            tip1 = (
+                event.x + (0.2 * (((self.start_x - event.x) * math.cos(math.pi / 6)) + ((self.start_y - event.y) * math.sin(math.pi / 6)))),
+                event.y + (0.2 * (((self.start_y - event.y) * math.cos(math.pi / 6)) - ((self.start_x - event.x) * math.sin(math.pi / 6))))
+            )
+            tip2 = (
+                event.x + (0.2 * (((self.start_x - event.x) * math.cos(math.pi / 6)) - ((self.start_y - event.y) * math.sin(math.pi / 6)))),
+                event.y + (0.2 * (((self.start_y - event.y) * math.cos(math.pi / 6)) + ((self.start_x - event.x) * math.sin(math.pi / 6))))
+            )
+            self.items.append(self.c.create_polygon(
+                self.start_x, self.start_y,
+                event.x, event.y,
+                tip1[0], tip1[1],
+                event.x, event.y,
+                tip2[0], tip2[1],
+                event.x, event.y,
+                outline=self.color, fill=self.fill_color, width=self.line_width
+            ))
 
         self.reset(None)
 

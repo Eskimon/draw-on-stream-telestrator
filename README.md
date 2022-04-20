@@ -57,6 +57,7 @@ BOOM, done. You can draw on the painter and it should appear nicely on your stre
 - `r`: Switch to "rectangle" mode
 - `e`: Switch to "ellipse/circle" mode
 - `f`: Toggle the "fill shape" option
+- `a`: Draw an arrow
 - `right-click` to draw straight line
 
 # Extra Notes
