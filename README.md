@@ -64,13 +64,15 @@ The "eraser" does only paint with the foreground color but doesn't really erase 
 
 Also, the source code might look convoluted. Obvisously it's because I change my mind on how to do things in the course of the devlopment. So basically:
 
+- Please note that I wrote this code in a small timespan to solve a problem I had at a particular moment. Sorry for the lack of clean code XD.
 - The `painter.py` script can be standalone
-- If you want a very transparent painter canvas, it might be difficult to see the buttons. Therefore, you can start the `commander.py` tool. It will send the commands to the `painter` through a socket.
+- If you want a very transparent painter canvas, it might be difficult to see the buttons. Therefore, you can start the `commander.py` tool. It will send the commands to the `painter` through a socket. Altough I don't really maintain that anymore (as no one uses it really) so bug will occures...
 - Any PR is welcomed.
 
 # Wanna thank me?
 
 This tool saved your stream? You wanna thank me? Buy me a beer or some coffee!
+If you can and want to help, you can sponsor me [on Tipeeee](https://tipeee.com/eskimon) or on Paypal
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&item_name=Donation+for+Draw+On+Stream+telestrator&business=WTF33XNRB3XTL&currency_code=EUR&source=url)
 
-Also, you can find me on [Twitter](https://twitter.com/Eskimon_fr), [Twitch](https://twitch.tv/eskimon), or [my very own blog](https://eskimon.fr)!
+Also, you can find me on [Twitter](https://twitter.com/Eskimon_fr), [Twitch](https://twitch.tv/eskimon), or [my blog](https://eskimon.fr)!
