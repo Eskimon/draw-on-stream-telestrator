@@ -406,6 +406,8 @@ class Painter():
             if event.char == '-':
                 value = int(max(1, self.alpha - 5))
                 the_queue.put('alpha {}'.format(value))
+            if event.keysym == 'r':
+                the_queue.put('alpha {}'.format(DEFAULT['alpha']))
         else:
             if event.char == 'r':
                 the_queue.put('mode rectangle')

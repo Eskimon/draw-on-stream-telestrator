@@ -52,6 +52,7 @@ BOOM, done. You can draw on the painter and it should appear nicely on your stre
 - `Ctrl -`: Decrement the painter window opacity
 - `Ctrl w`: Wipe the current drawing
 - `Ctrl z`: Cancel shapes
+- `Ctrl r`: reset transparency
 - `p`: Switch to "pen" mode
 - `r`: Switch to "rectangle" mode
 - `e`: Switch to "ellipse/circle" mode
