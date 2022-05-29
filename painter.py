@@ -22,6 +22,7 @@ DEFAULT = {
     "mode": "pen",
     "alpha": 80,
     "fill": None,
+    "separate": False,
 }
 
 
@@ -97,6 +98,7 @@ class MenuBar(tk.Frame):
         # Some variables
         self.text_input = tk.StringVar(self)
         self.fill_status = tk.IntVar(self)
+        self.separate_status = tk.IntVar(self)
 
         self.buttons = {}
 
@@ -136,7 +138,7 @@ class MenuBar(tk.Frame):
         self.undo_button = tk.Button(self, text="undo", command=self.undo)
         self.undo_button.grid(row=0, column=10)
 
-        self.buttons["fill"] = tk.Checkbutton(self, text="fill shapes", variable=self.fill_status, command=self.fill)
+        self.buttons["fill"] = tk.Checkbutton(self, text="fill shapes", variable=self.fill_status)
         self.buttons["fill"].grid(row=0, column=11)
 
         self.frame_quick_colors = tk.Frame(self)
@@ -153,10 +155,13 @@ class MenuBar(tk.Frame):
             )
             btn.pack(side=tk.LEFT)
 
+        self.separate_button = tk.Checkbutton(self, text="separate", variable=self.separate_status, command=self.fill)
+        self.separate_button.grid(row=0, column=13)
+
         self.text_entry = tk.Entry(self, width=60, textvariable=self.text_input)
-        self.text_entry.grid(row=0, column=13)
+        self.text_entry.grid(row=0, column=14)
         self.buttons["text"] = tk.Button(self, text="text", command=self.use_text)
-        self.buttons["text"].grid(row=0, column=14)
+        self.buttons["text"].grid(row=0, column=15)
 
         self.active_button = self.buttons["pen"]
 
@@ -173,6 +178,8 @@ class MenuBar(tk.Frame):
             self.choose_size_button.set(kwargs["width"])
         if "alpha" in kwargs.keys():
             self.choose_alpha_button.set(kwargs["alpha"])
+        if "separate" in kwargs.keys() :
+            self.separate_status.set(1 if kwargs["separate"] else 0)
 
     def use_pen(self):
         self.activate_button(self.buttons["pen"])
@@ -272,22 +279,26 @@ class Painter(tk.Frame):
         self.shift_pressed = False
         self.alt_pressed = False
 
-        self.toplevel = tk.Toplevel()
-        self.commander = Commander(self.toplevel)
-        self.menu_bar = self.commander.menu_bar
-        self.status_bar = self.commander.status_bar
-        self.toplevel.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.load_config()
 
+        if self.separate :
 
+            self.toplevel = tk.Toplevel()
+            self.commander = Commander(self.toplevel)
+            self.menu_bar = self.commander.menu_bar
+            self.status_bar = self.commander.status_bar
+            self.toplevel.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        else :
         # The canvas
-        #self.menu_bar = MenuBar(self.root)
-        #self.menu_bar.pack(side=tk.TOP, fill=tk.X)
+            self.menu_bar = MenuBar(self.root)
+            self.menu_bar.pack(side=tk.TOP, fill=tk.X)
+
+            self.status_bar = StatusBar(self.root)
+            self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
         self.c = tk.Canvas(self.root)
         self.c.pack(expand=True, fill=tk.BOTH)
-
-        #self.status_bar = StatusBar(self.root)
-        #self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
         # Initialize some stuff
         self.setup()
@@ -306,6 +317,7 @@ class Painter(tk.Frame):
             mode=self.mode,
             alpha=self.alpha,
             fill=self.fill_color,
+            separate=self.separate,
         )
 
         self.root.wait_visibility(self.root)
@@ -333,17 +345,19 @@ class Painter(tk.Frame):
             "alpha": self.alpha,
             "fill": self.fill_color,
             "geometry": self.root.geometry(),
+            "separate" : bool(self.menu_bar.separate_status.get()),
         }
         print(config)
         json.dump(config, open("config.json", "w"), indent=2)
         self.root.destroy()
 
-    def setup(self):
+    def load_config(self) :
         # Load json config
         try:
-            config = json.load(open("config.json"))
+            self.config = json.load(open("config.json"))
         except FileNotFoundError:
-            config = {}
+            self.config = {}
+        config = self.config
         self.line_width = int(config.get("width", DEFAULT["width"]))
         self.font.configure(size=(self.line_width * 5))
         self.color = config.get("color", DEFAULT["color"])
@@ -351,7 +365,10 @@ class Painter(tk.Frame):
         self.mode = config.get("mode", DEFAULT["mode"])
         self.alpha = int(config.get("alpha", DEFAULT["alpha"]))
         self.fill_color = config.get("fill", DEFAULT["fill"])
-        geometry = config.get("geometry", None)
+        self.separate = config.get("separate", DEFAULT["separate"])
+
+    def setup(self):
+        geometry = self.config.get("geometry", None)
         if geometry:
             self.root.geometry(geometry)
         self.c.configure(bg=self.bg_color)
