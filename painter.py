@@ -3,7 +3,6 @@
 import json
 import math
 import queue
-import socket
 import threading
 import time
 import tkinter as tk
@@ -15,8 +14,6 @@ from tkinter.colorchooser import askcolor
 
 the_queue = queue.Queue()
 
-HOST = "localhost"
-PORT = 4816
 
 DEFAULT = {
     "width": 5.0,
@@ -244,13 +241,26 @@ class MenuBar(tk.Frame):
         self.buttons["color"].configure(background=color)
         the_queue.put("color {}".format(color))
 
+class Commander(tk.Frame):
+    def __init__(self, root=None):
+        super().__init__(root)
+        self.root = root
+        self.root.title("DrawOnStream - Commander")
+        self.font = tkFont.Font(family="Helvetica", size=20)
+        self.text_input = tk.StringVar(self.root)
+        self.menu_bar = MenuBar(self.root)
+        self.menu_bar.pack(side=tk.TOP, fill=tk.X)
+        self.status_bar = StatusBar(self.root)
+        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
-class Painter:
+
+class Painter(tk.Frame):
 
     WIN_TITLE = "DrawOnStream - Painter"
 
-    def __init__(self):
-        self.root = tk.Tk()
+    def __init__(self, root=None):
+        super().__init__(root)
+        self.root = root
         self.root.title(self.WIN_TITLE)
 
         # Some variables
@@ -262,15 +272,22 @@ class Painter:
         self.shift_pressed = False
         self.alt_pressed = False
 
+        self.toplevel = tk.Toplevel()
+        self.commander = Commander(self.toplevel)
+        self.menu_bar = self.commander.menu_bar
+        self.status_bar = self.commander.status_bar
+        self.toplevel.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+
         # The canvas
-        self.menu_bar = MenuBar(self.root)
-        self.menu_bar.pack(side=tk.TOP, fill=tk.X)
+        #self.menu_bar = MenuBar(self.root)
+        #self.menu_bar.pack(side=tk.TOP, fill=tk.X)
 
         self.c = tk.Canvas(self.root)
         self.c.pack(expand=True, fill=tk.BOTH)
 
-        self.status_bar = StatusBar(self.root)
-        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        #self.status_bar = StatusBar(self.root)
+        #self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
         # Initialize some stuff
         self.setup()
@@ -296,7 +313,7 @@ class Painter:
 
         self.root.bind("<Configure>", self.on_configure)
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.root.mainloop()
+
 
     def on_configure(self, event):
         geometry = self.root.geometry()
@@ -849,35 +866,8 @@ class Painter:
         self.reset(None)
 
 
-class SocketThread(threading.Thread):
-    def __init__(self):
-        super().__init__()
-        self.daemon = True
-        self.start()
-
-    def run(self):
-
-        while True:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind((HOST, PORT))
-                s.listen()
-                conn, addr = s.accept()
-                with conn:
-                    print("Connected by", addr)
-                    while True:
-                        time.sleep(0.1)
-                        data = conn.recv(1024)
-                        if not data:
-                            break
-                        data = data.decode()
-                        lines = data.split("\n")
-                        # print('received:', lines)
-                        for line in lines:
-                            if line:
-                                the_queue.put(line)
-            print("socket disconnected")
-
 
 if __name__ == "__main__":
-    SocketThread()
-    Painter()
+    root = tk.Tk()
+    Painter(root)
+    root.mainloop()
