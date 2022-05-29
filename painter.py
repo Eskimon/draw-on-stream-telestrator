@@ -446,6 +446,11 @@ class Painter:
     def undo(self):
         if len(self.items):
             item = self.items[-1]
+            if "manual" in self.c.gettags(item) :
+                while "manual-start" not in self.c.gettags(item) :
+                    self.c.delete(item)
+                    self.items.pop()
+                    item = self.items[-1]
             self.c.delete(item)
             self.items.pop()
 
@@ -502,6 +507,7 @@ class Painter:
                     capstyle=tk.ROUND,
                     smooth=tk.TRUE,
                     splinesteps=36,
+                    tags = "manual-start",
                 )
             )
         if self.mode == "text":
@@ -523,6 +529,7 @@ class Painter:
                     capstyle=tk.ROUND,
                     smooth=tk.TRUE,
                     splinesteps=36,
+                    tags = "manual",
                 )
             )
             self.start_x = event.x
