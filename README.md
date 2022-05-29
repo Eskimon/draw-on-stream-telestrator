@@ -68,7 +68,7 @@ Also, the source code might look convoluted. Obvisously it's because I change my
 
 - Please note that I wrote this code in a small timespan to solve a problem I had at a particular moment. Sorry for the lack of clean code XD.
 - The `painter.py` script can be standalone
-- If you want a very transparent painter canvas, it might be difficult to see the buttons. Therefore, you can start the `commander.py` tool. It will send the commands to the `painter` through a socket. Altough I don't really maintain that anymore (as no one uses it really) so bug will occures...
+- If you want a very transparent painter canvas, it might be difficult to see the buttons. Therefore, it is possible to separate the command panel into another window, which will remain opaque. This option takes effect at next start.
 - Any PR is welcomed.
 
 # Wanna thank me?
